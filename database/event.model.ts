@@ -99,7 +99,7 @@ EventSchema.index({ slug: 1 }, { unique: true })
 EventSchema.pre<IEventDocument>('save', function (next) {
   try {
     // Validate required string fields are non-empty when trimmed
-    const requiredStringFields: Array<keyof IEvent> = [
+    const requiredStringFields: Array<keyof IEventDocument> = [
       'title',
       'description',
       'overview',
@@ -113,10 +113,50 @@ EventSchema.pre<IEventDocument>('save', function (next) {
       'organizer',
     ]
     for (const field of requiredStringFields) {
-      const val = (this as any)[field]
-      if (typeof val !== 'string' || val.trim().length === 0) {
+      const val = this[field]
+
+      // Ensure type is string at runtime and that trimmed length > 0.
+      if (typeof val !== 'string') {
+        throw new Error(`${String(field)} is required and must be a non-empty string`)
+      }
+
+      if (val.trim().length === 0) {
         throw new Error(`${String(field)} is required and must be non-empty`)
       }
+    }
+
+    // Validate and normalize array fields (`agenda`, `tags`): ensure each element
+    // is a non-empty string after trimming. If any element is invalid, throw a
+    // Mongoose ValidationError with a clear message referencing the field.
+    const arrayFields: Array<'agenda' | 'tags'> = ['agenda', 'tags']
+    for (const field of arrayFields) {
+      const raw = this[field]
+      if (!Array.isArray(raw)) {
+        const ve = new mongoose.Error.ValidationError(this)
+        ve.addError(field, new mongoose.Error.ValidatorError({ message: `${field} must be an array of non-empty strings`, path: field }))
+        throw ve
+      }
+
+      // Trim elements and validate type + non-empty
+      const trimmed: string[] = raw.map((item: unknown, idx: number) => {
+        if (typeof item !== 'string') {
+          const ve = new mongoose.Error.ValidationError(this)
+          ve.addError(field, new mongoose.Error.ValidatorError({ message: `${field}[${idx}] must be a non-empty string`, path: field }))
+          throw ve
+        }
+        return item.trim()
+      })
+
+      // If any trimmed item is empty, throw a ValidationError referencing the index
+      const emptyIndex = trimmed.findIndex(s => s.length === 0)
+      if (emptyIndex !== -1) {
+        const ve = new mongoose.Error.ValidationError(this)
+        ve.addError(field, new mongoose.Error.ValidatorError({ message: `${field}[${emptyIndex}] must be a non-empty string`, path: field }))
+        throw ve
+      }
+
+      // Assign normalized (trimmed) array back to document
+      this[field] = trimmed as any
     }
 
     // Slug generation: only when title is new or modified
