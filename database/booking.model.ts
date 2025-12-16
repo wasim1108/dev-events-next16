@@ -25,6 +25,9 @@ const BookingSchema = new Schema<IBookingDocument, IBookingModel>(
   { timestamps: true, strict: true }
 )
 
+// Prevent duplicate bookings for the same event
+BookingSchema.index({ eventId: 1, email: 1 }, { unique: true })
+
 // Pre-save hook: ensure referenced Event exists and email is valid
 BookingSchema.pre<IBookingDocument>('save', async function (next) {
   try {
