@@ -36,10 +36,12 @@ BookingSchema.pre<IBookingDocument>('save', async function (next) {
       throw new Error('Invalid email format')
     }
 
-    // Verify that the referenced Event exists
-    const exists = await Event.exists({ _id: this.eventId })
-    if (!exists) {
-      throw new Error('Referenced eventId does not exist')
+    // Verify that the referenced Event exists (only on create or eventId change)
+    if (this.isNew || this.isModified('eventId')) {
+      const exists = await Event.exists({ _id: this.eventId })
+      if (!exists) {
+        throw new Error('Referenced eventId does not exist')
+      }
     }
 
     next()
