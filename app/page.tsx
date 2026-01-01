@@ -1,9 +1,7 @@
 import ExploreBtn from '@/components/ExploreBtn'
 import EventCard from '@/components/EventCard'
-
 import { IEvent } from '@/database';
 import { cacheLife } from 'next/cache';
-import events from '@/lib/constants';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -16,33 +14,33 @@ const page = async () => {
 'use cache'
 cacheLife('hours')
 
-// let events = [];
+let events = [];
 
-// try {
-//   const response = await fetch(`${baseUrl}/api/events`, {
-//     cache: 'no-store', // or use next: { revalidate: 60 } for ISR
-//   });
+try {
+  const response = await fetch(`${baseUrl}/api/events`, {
+    cache: 'no-store', // or use next: { revalidate: 60 } for ISR
+  });
   
-//   if (!response.ok) {
-//     throw new Error(`Failed to fetch events: ${response.status}`);
-//   }
+  if (!response.ok) {
+    throw new Error(`Failed to fetch events: ${response.status}`);
+  }
   
-//   const data = await response.json()
-//   events = data.events;
+  const data = await response.json()
+  events = data.events;
   
-//   if (!Array.isArray(events)) {
-//     throw new Error('Invalid events data structure');
-//   }
-// } catch (error) {
-//   console.error('Error fetching events:', error);
-//   // Consider returning an error UI or empty state
-//   return (
-//     <section>
-//       <h1 className='text-center'>Unable to load events</h1>
-//       <p className='text-center mt-5'>Please try again later</p>
-//     </section>
-//   );
-// }
+  if (!Array.isArray(events)) {
+    throw new Error('Invalid events data structure');
+  }
+} catch (error) {
+  console.error('Error fetching events:', error);
+  // Consider returning an error UI or empty state
+  return (
+    <section>
+      <h1 className='text-center'>Unable to load events</h1>
+      <p className='text-center mt-5'>Please try again later</p>
+    </section>
+  );
+}
 
   return (
     <section>
@@ -56,7 +54,7 @@ cacheLife('hours')
 
         <ul className="events">
           {/* Events will be listed here */}
-          {events && events.length > 0 && events.map((event)  => (
+          {events && events.length > 0 && events.map((event: IEvent)  => (
             <li key={event.title}>
               <EventCard {...event} />
             </li>
