@@ -3,9 +3,9 @@ import EventCard from '@/components/EventCard'
 import { IEvent } from '@/database';
 import { cacheLife } from 'next/cache';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
-if (!baseUrl) {
+if (!BASE_URL) {
   throw new Error('NEXT_PUBLIC_BASE_URL environment variable is not configured');
 }
 
@@ -14,31 +14,8 @@ const page = async () => {
 'use cache'
 cacheLife('hours')
 
-let events = [];
-
-try {
-  const response = await fetch(`${baseUrl}/api/events`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch events: ${response.status}`);
-  }
-  
-  const data = await response.json()
-  events = data.events;
-  
-  if (!Array.isArray(events)) {
-    throw new Error('Invalid events data structure');
-  }
-} catch (error) {
-  console.error('Error fetching events:', error);
-  // Consider returning an error UI or empty state
-  return (
-    <section>
-      <h1 className='text-center'>Unable to load events</h1>
-      <p className='text-center mt-5'>Please try again later</p>
-    </section>
-  );
-}
+const response = await fetch(`${BASE_URL}/api/events`);
+const { events } = await response.json();
 
   return (
     <section>
