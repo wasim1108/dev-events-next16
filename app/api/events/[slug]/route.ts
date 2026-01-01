@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import Event, { IEvent } from '@/database/event.model';
 
-type Params = { params: { slug?: string | string[] } };
+type Params = { params: Promise<{ slug?: string | string[] }> };
 
 /**
  * GET /api/events/[slug]
