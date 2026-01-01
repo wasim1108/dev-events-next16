@@ -56,7 +56,7 @@ cacheLife('hours')
 
         <ul className="events">
           {/* Events will be listed here */}
-          {events && events.map((event: IEvent)  => (
+          {events && events.length > 0 && events.map((event)  => (
             <li key={event.title}>
               <EventCard {...event} />
             </li>
