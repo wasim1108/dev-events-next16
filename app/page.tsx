@@ -17,9 +17,7 @@ cacheLife('hours')
 let events = [];
 
 try {
-  const response = await fetch(`${baseUrl}/api/events`, {
-    cache: 'no-store', // or use next: { revalidate: 60 } for ISR
-  });
+  const response = await fetch(`${baseUrl}/api/events`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch events: ${response.status}`);
